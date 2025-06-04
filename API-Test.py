@@ -1,4 +1,4 @@
-# Weather API Tool using FastMCP
+# API Tool using FastMCP
 # This script provides a FastMCP server that allows users to get weather alerts
 # and forecasts using the National Weather Service (NWS) API.
 import sys
@@ -10,35 +10,13 @@ import pandas as pd
 
 
 # Initialize FastMCP server
-mcp = FastMCP("luna", description="Luna PE API Tool using FastMCP", version="1.0.0")
-#mcp = FastMCP("weather", description="Weather API Tool using FastMCP", version="1.0.0")
+mcp = FastMCP("api-test", description="Luna PE API Tool using FastMCP", version="1.0.0")
+
 
 
 # Constants
 XLSX_FILE = "/Users/johnsolder/Library/CloudStorage/OneDrive-Coherent/Excel Examples/Mortgage Model/MTG_AMORT_CALC/mortgage-amort-calculator.xlsx"
-NWS_API_BASE = "https://api.weather.gov"
-USER_AGENT = "weather-app/1.0"
 
-def convert_xls_to_df(xlsx_file: str) -> pd.DataFrame:
-    """Convert an XLSX file to a Pandas DataFrame."""
-    try:
-        #df = pd.read_excel(xlsx_file, engine='openpyxl')
-        dfs = pd.read_excel(xlsx_file, sheet_name=None,engine='openpyxl')
-        combined_df = pd.concat(dfs.values(), ignore_index=True)
-        return dfs
-    except Exception as e:
-        print(f"Error reading XLSX file: {e}", file=sys.stderr)
-        return pd.DataFrame()  # Return empty DataFrame on error        
-
- def convert_df_to_md_table(df: pd.DataFrame) -> str:
-    """Convert a Pandas DataFrame to a Markdown table."""
-    if df.empty:
-        return "No data available."
-
-    md_table = df.to_markdown(index=False)
-    print(markdown_table)
-
-    return md_table   
 
 async def make_nws_request(url: str) -> dict[str, Any] | None:
     """Make a request to the NWS API with proper error handling."""
@@ -70,7 +48,7 @@ async def get_alerts(state: str) -> str:
 
     Args:
         state: Two-letter US state code (e.g. CA, NY)
-    """
+
     url = f"{NWS_API_BASE}/alerts/active/area/{state}"
     data = await make_nws_request(url)
 
