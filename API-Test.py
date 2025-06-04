@@ -75,5 +75,5 @@ def call_api(
 if __name__ == "__main__":
     # Initialize and run the server
     #mcp.run(transport='stdio')
-    print('IN API-Test.PY +++++++++++++++++++++++', file=sys.stderr)
+    print('IN API-Test.PY =========================', file=sys.stderr)
     print('API',url, file=sys.stderr)
