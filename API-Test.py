@@ -13,6 +13,7 @@ mcp = FastMCP("api-test", description="API Testing Tool using FastMCP", version=
 
 # Constants
 url = "https://excel.uat.us.coherent.global/presales/api/v3/folders/Solder-Test/services/mortgage-amort-calculator/execute"
+query_value = "[\"MonthlyPmt\",\"ScheduledNoPayments\",\"ActualNoPmts\",\"YrsSavedOffOrigLoanTerm\",\"TotEarlyPmts\",\"TotalIntPaid\"]"
 
 payload = json.dumps({
    "request_data": {
@@ -32,8 +33,8 @@ payload = json.dumps({
       "call_purpose": None,
       "source_system": None,
       "correlation_id": None,
-      "service_category": "",
-      "requested_output": None
+      "service_category": "ALL",
+      "requested_output": query_value
    }
 })
 headers = {
@@ -41,6 +42,17 @@ headers = {
    'x-tenant-name': 'presales',
    'x-synthetic-key': '46ac56eb-90ea-4570-80c3-4750ffae5874'
 }
+
+def call_url():
+    """
+    Function to call the API endpoint with the specified payload and headers.
+    This is a placeholder for direct API calls.
+    """
+    response = requests.post(url, headers=headers, data=payload)
+    print(response.text)
+    print('+++URL RESPONSE', response.json(), file=sys.stderr)
+    return response.json()
+
 
 #response = requests.request("POST", url, headers=headers, data=payload, allow_redirects=False)
 
@@ -56,24 +68,36 @@ async def call_api(
     Calls an arbitrary API endpoint with the specified method and arguments.
     Returns the JSON response or text.
     """
-    try:
-        response = requests.request(
-            method=method,
-            url=endpoint,
-            params=params,
-            json=data,
-            headers=headers
-        )
+    async with httpx.AsyncClient() as client:
         try:
-            print(response.text)
-            return {"status_code": response.status_code, "json": response.json()}
-        except Exception:
-            return {"status_code": response.status_code, "text": response.text}
-    except Exception as e:
-        return {"error": str(e)}
+            response = await client.post(
+                url=endpoint,
+                params=params,
+                json=data,
+                headers=headers,
+                timeout=60.0
+            )
+            response.raise_for_status()  # Raise an error for bad responses
+            #print('+++API RESPONSE TEXT', response.text, file=sys.stderr)
+            #print('+++API RESPONSE JSON', response.json(), file=sys.stderr)
+            return response.json()
+        
+        except Exception as e:
+            return {"error": str(e)}
+
+    
+async def call_url_func():
+    data = await make_url_request(url)  # Call the API to test it asynchronously
+    print('+++DATA', data, file=sys.stderr)
     
 if __name__ == "__main__":
+    import asyncio
     # Initialize and run the server
     mcp.run(transport='stdio')
-    print('IN API-Test.PY =========================', file=sys.stderr)
-    print('API',url," ",'Headers',headers," ",'Payload',payload, file=sys.stderr)
+
+    #print('IN API-Test.PY =========================', file=sys.stderr)
+    #print('API',url,'\n','Headers',headers,'\n','Payload',payload, file=sys.stderr)
+    # Test the non-server function call
+    #asyncio.run(call_url_func())  # type: ignore # Call the API to test it asynchronously
+    #call_url()  # Call the API to test it synchronously
+    
