@@ -45,7 +45,7 @@ headers = {
 #response = requests.request("POST", url, headers=headers, data=payload, allow_redirects=False)
 
 @mcp.tool()
-def call_api(
+async def call_api(
     endpoint: str = url,
     method: str = "POST",
     params: dict = None,
