@@ -15,6 +15,8 @@ mcp = FastMCP("api-test", description="API Testing Tool using FastMCP", version=
 url = "https://excel.uat.us.coherent.global/presales/api/v3/folders/Solder-Test/services/mortgage-amort-calculator/execute"
 query_value = "[\"MonthlyPmt\",\"ScheduledNoPayments\",\"ActualNoPmts\",\"YrsSavedOffOrigLoanTerm\",\"TotEarlyPmts\",\"TotalIntPaid\"]"
 
+# Payload for the API request
+# This payload is structured to match the expected input for the mortgage amortization calculator service.
 payload = json.dumps({
    "request_data": {
       "inputs": {
@@ -43,6 +45,7 @@ headers = {
    'x-synthetic-key': '46ac56eb-90ea-4570-80c3-4750ffae5874'
 }
 
+# Function to make a synchronous request to the API endpoint
 def call_url():
     """
     Function to call the API endpoint with the specified payload and headers.
@@ -55,6 +58,43 @@ def call_url():
 
 
 #response = requests.request("POST", url, headers=headers, data=payload, allow_redirects=False)
+
+async def call_url_func():
+    data = await make_url_request(url)  # Call the API to test it asynchronously
+    print('+++DATA', data, file=sys.stderr)
+
+async def make_url_request(url: str) -> Any:
+    """
+    Asynchronous function to make a request to the specified URL.
+    Returns the JSON response or text.
+    """
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                url=url,
+                headers=headers,
+                data=payload,
+                timeout=60.0
+            )
+            response.raise_for_status()  # Raise an error for bad responses
+            return response.json()
+        
+        except Exception as e:
+            return {"error": str(e)}    
+        
+@mcp.tool()
+async def get_payload_data(payload_json, headers_dict):
+    """
+    Function to get data from the API using the provided payload and headers.
+    This function is registered with FastMCP and can be called via the MCP server.
+    """
+    # Convert payload_json and headers_dict to appropriate types
+    payload = json.loads(payload_json) if isinstance(payload_json, str) else payload_json
+    headers = json.loads(headers_dict) if isinstance(headers_dict, str) else headers_dict
+
+    print('PAYLOAD_DICT\n', payload_dict, 'HEADER_DICT\n',headers_dict,file=sys.stderr)
+        
+    
 
 @mcp.tool()
 async def call_api(
@@ -78,24 +118,18 @@ async def call_api(
                 timeout=60.0
             )
             response.raise_for_status()  # Raise an error for bad responses
-            #print('+++API RESPONSE TEXT', response.text, file=sys.stderr)
-            #print('+++API RESPONSE JSON', response.json(), file=sys.stderr)
             return response.json()
         
         except Exception as e:
             return {"error": str(e)}
-
-    
-async def call_url_func():
-    data = await make_url_request(url)  # Call the API to test it asynchronously
-    print('+++DATA', data, file=sys.stderr)
-    
+            
 if __name__ == "__main__":
     import asyncio
     # Initialize and run the server
+    # This will start the FastMCP server and listen for incoming requests.
     mcp.run(transport='stdio')
 
-    #print('IN API-Test.PY =========================', file=sys.stderr)
+ 
     #print('API',url,'\n','Headers',headers,'\n','Payload',payload, file=sys.stderr)
     # Test the non-server function call
     #asyncio.run(call_url_func())  # type: ignore # Call the API to test it asynchronously
