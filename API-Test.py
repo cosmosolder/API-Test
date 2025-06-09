@@ -81,20 +81,6 @@ async def make_url_request(url: str) -> Any:
         
         except Exception as e:
             return {"error": str(e)}    
-        
-@mcp.tool()
-async def get_payload_data(payload_json, headers_dict):
-    """
-    Function to get data from the API using the provided payload and headers.
-    This function is registered with FastMCP and can be called via the MCP server.
-    """
-    # Convert payload_json and headers_dict to appropriate types
-    payload = json.loads(payload_json) if isinstance(payload_json, str) else payload_json
-    headers = json.loads(headers_dict) if isinstance(headers_dict, str) else headers_dict
-
-    print('PAYLOAD_DICT\n', payload_dict, 'HEADER_DICT\n',headers_dict,file=sys.stderr)
-        
-    
 
 @mcp.tool()
 async def call_api(
